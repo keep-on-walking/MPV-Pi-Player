@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPV Pi Player Control</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>MPV Pi Player</h1>
+            <div class="subtitle">
+                <span id="hostname">Loading...</span> | 
+                <span id="sync-mode" class="sync-badge">Standalone</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="container">
+                <!-- Player Controls Card -->
+                <div class="card">
+                    <h2 class="card-title">Now Playing</h2>
+                    <div id="current-file" style="margin-bottom: 20px; font-size: 1.2rem;">No file selected</div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar">
+                            <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="current-time">00:00</span>
+                            <span id="duration">00:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Playback Controls -->
+                    <div class="player-controls">
+                        <button id="btn-play" class="btn btn-primary" title="Play/Resume">▶ PLAY</button>
+                        <button id="btn-pause" class="btn btn-secondary" title="Pause">⏸ PAUSE</button>
+                        <button id="btn-stop" class="btn btn-danger" title="Stop">⏹ STOP</button>
+                        <button id="btn-skip-back" class="btn btn-secondary" title="Skip -30s">⏪ -30s</button>
+                        <button id="btn-skip-forward" class="btn btn-secondary" title="Skip +30s">⏩ +30s</button>
+                    </div>
+
+                    <!-- Volume Control -->
+                    <div class="volume-control">
+                        <label>Volume:</label>
+                        <input type="range" id="volume" class="volume-slider" min="0" max="100" value="100">
+                        <span id="volume-value" style="margin-left: 10px;">100%</span>
+                    </div>
+
+                    <!-- Seek Control -->
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
+                        <label>Seek to (seconds):</label>
+                        <input type="number" id="seek-position" min="0" placeholder="300" style="padding: 8px; width: 100px; background: #2d2d2d; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px;">
+                        <button id="btn-seek" class="btn btn-primary">SEEK</button>
+                    </div>
+
+                    <!-- Status Display -->
+                    <div class="status-display">
+                        <div class="status-item">
+                            <div class="status-label">State</div>
+                            <div class="status-value" id="player-state">Stopped</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-label">Position</div>
+                            <div class="status-value" id="position-display">0s</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-label">Volume</div>
+                            <div class="status-value" id="volume-display">100%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Management Card -->
+                <div class="card">
+                    <h2 class="card-title">Media Files</h2>
+                    
+                    <!-- Upload Area -->
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Drag & drop video files here or click to browse</div>
+                        <input type="file" id="fileInput" accept="video/*" multiple>
+                        <button id="btn-browse" class="btn btn-primary">CHOOSE FILES</button>
+                    </div>
+
+                    <div id="upload-progress" style="display: none; margin: 20px 0;">
+                        <div class="progress-bar">
+                            <div id="upload-progress-fill" class="progress-fill"></div>
+                        </div>
+                        <div id="upload-status" style="margin-top: 10px;">Uploading...</div>
+                    </div>
+
+                    <!-- File List -->
+                    <div id="file-list" class="file-list">
+                        <!-- Files will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Sync Settings Card -->
+                <div class="card">
+                    <h2 class="card-title">Multi-Player Sync</h2>
+                    <div class="sync-controls">
+                        <div class="sync-mode" id="sync-standalone">
+                            <h3>Standalone</h3>
+                            <p>Independent playback</p>
+                            <button id="btn-sync-standalone" class="btn btn-primary">SET STANDALONE</button>
+                        </div>
+                        
+                        <div class="sync-mode" id="sync-master">
+                            <h3>Master</h3>
+                            <p>Control other players</p>
+                            <button id="btn-sync-master" class="btn btn-primary">SET AS MASTER</button>
+                        </div>
+                        
+                        <div class="sync-mode" id="sync-slave">
+                            <h3>Slave</h3>
+                            <p>Follow master player</p>
+                            <input type="text" id="master-ip" class="master-ip-input" placeholder="Master IP (e.g., 192.168.0.100)">
+                            <button id="btn-sync-slave" class="btn btn-primary" style="margin-top: 10px;">CONNECT TO MASTER</button>
+                        </div>
+                    </div>
+                    
+                    <div id="sync-status" style="margin-top: 20px; padding: 15px; background: #2d2d2d; border-radius: 8px;">
+                        <!-- Sync status will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- API Info Card -->
+                <div class="card">
+                    <h2 class="card-title">Node-RED Integration</h2>
+                    <div style="background: #2d2d2d; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <code id="api-endpoint" style="color: #667eea; font-size: 1.1rem;">Loading...</code>
+                    </div>
+                    
+                    <details style="background: #2d2d2d; padding: 15px; border-radius: 8px;">
+                        <summary style="cursor: pointer; font-weight: bold; margin-bottom: 10px;">Available API Endpoints</summary>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                            <li style="margin: 8px 0;"><code>POST /api/play</code> - Play video {"file": "video.mp4"}</li>
+                            <li style="margin: 8px 0;"><code>POST /api/pause</code> - Toggle pause/resume</li>
+                            <li style="margin: 8px 0;"><code>POST /api/stop</code> - Stop playback</li>
+                            <li style="margin: 8px 0;"><code>POST /api/skip</code> - Skip forward/back {"seconds": 30}</li>
+                            <li style="margin: 8px 0;"><code>POST /api/seek</code> - Seek to position {"position": 300}</li>
+                            <li style="margin: 8px 0;"><code>POST /api/volume</code> - Set volume {"level": 50}</li>
+                            <li style="margin: 8px 0;"><code>GET /api/status</code> - Get player status</li>
+                            <li style="margin: 8px 0;"><code>GET /api/files</code> - List media files</li>
+                        </ul>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
