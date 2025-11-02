@@ -1,0 +1,15 @@
+# MPV Pi Player - Python Dependencies
+
+# Web Framework
+Flask==2.3.3
+flask-cors==4.0.0
+Werkzeug==2.3.7
+
+# WebSocket Support for Sync
+websockets==11.0.3
+
+# Async Support
+asyncio==3.4.3
+
+# System utilities
+psutil==5.9.5
