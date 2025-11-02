@@ -1,0 +1,22 @@
+[Unit]
+Description=MPV Pi Player Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/mpv-pi-player
+Environment="DISPLAY=:0"
+Environment="HOME=/home/pi"
+Environment="PATH=/home/pi/mpv-pi-player/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStartPre=/bin/sleep 10
+ExecStart=/home/pi/mpv-pi-player/venv/bin/python /home/pi/mpv-pi-player/app.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
