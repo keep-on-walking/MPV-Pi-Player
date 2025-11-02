@@ -87,7 +87,8 @@ class MPVController:
                 f'--volume={self.volume}',
                 '--video-sync=display-resample',
                 '--audio-channels=stereo',  # Force stereo output
-                '--audio-device=alsa/hw:0,0',  # HDMI 0 audio output
+                '--audio-device=alsa/hdmi:CARD=vc4hdmi0,DEV=0',  # Raspberry Pi 4 HDMI audio output
+                '--audio-samplerate=48000',  # Standard HDMI sample rate
             ])
             
             # IPC socket for control
@@ -322,3 +323,4 @@ class MPVController:
                 logger.debug(f"Monitor error: {e}")
             
             time.sleep(0.5)
+
