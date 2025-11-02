@@ -129,6 +129,16 @@ sudo systemctl stop mpv-player.service
 - Check TV audio isn't muted
 - Test audio: `speaker-test -D hw:0,0 -c 2 -l 1`
 
+- ## Troubleshooting
+
+### Audio Issues
+If you don't hear audio through HDMI:
+```bash
+cd ~/MPV-Pi-Player/
+chmod +x fix-audio.sh
+./fix-audio.sh
+
+
 ### Web Interface Not Loading
 - Check Pi's IP address: `hostname -I`
 - Ensure service is running: `sudo systemctl status mpv-player.service`
