@@ -199,7 +199,7 @@ ctl.!default {
 EOF
 
 # Set user-specific ALSA config
-tee $HOME_DIR/.asoundrc > /dev/null << 'EOF'
+sudo tee $HOME_DIR/.asoundrc > /dev/null << 'EOF'
 # User-specific HDMI 0 setting
 pcm.!default {
     type hw
@@ -215,6 +215,7 @@ defaults.ctl.card 0
 defaults.pcm.card 0
 EOF
 
+# Fix ownership of the file
 sudo chown $CURRENT_USER:$CURRENT_USER $HOME_DIR/.asoundrc
 
 # Create audio persistence service
@@ -328,9 +329,9 @@ EOF
 echo ""
 echo "Step 9: Setting permissions..."
 
-chown -R $CURRENT_USER:$CURRENT_USER $INSTALL_DIR
-chown -R $CURRENT_USER:$CURRENT_USER $HOME_DIR/videos
-chmod +x $INSTALL_DIR/*.py
+sudo chown -R $CURRENT_USER:$CURRENT_USER $INSTALL_DIR
+sudo chown -R $CURRENT_USER:$CURRENT_USER $HOME_DIR/videos
+sudo chmod +x $INSTALL_DIR/*.py 2>/dev/null || true
 
 echo ""
 echo "Step 10: Starting the service..."
@@ -368,3 +369,4 @@ else
     echo ""
     echo "Manual reboot recommended: sudo reboot"
 fi
+
