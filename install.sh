@@ -244,16 +244,23 @@ sudo amixer -c 0 sset Master 100% unmute 2>/dev/null || true
 echo ""
 echo "Step 5: Downloading application files..."
 
-# Create directories
-mkdir -p $INSTALL_DIR
+# Create video directory
 mkdir -p $HOME_DIR/videos
 
-# Clone repository
+# Check if installation directory exists and handle it
 cd $HOME_DIR
 if [ -d "$INSTALL_DIR" ]; then
-    echo "Updating existing installation..."
-    cd $INSTALL_DIR
-    git pull origin main || true
+    # Check if it's a valid git repository
+    if [ -d "$INSTALL_DIR/.git" ]; then
+        echo "Updating existing installation..."
+        cd $INSTALL_DIR
+        git pull origin main || true
+    else
+        echo "Removing incomplete installation..."
+        sudo rm -rf $INSTALL_DIR
+        echo "Cloning repository..."
+        git clone $REPO_URL $INSTALL_DIR
+    fi
 else
     echo "Cloning repository..."
     git clone $REPO_URL $INSTALL_DIR
@@ -268,7 +275,31 @@ echo "Step 6: Installing Python dependencies..."
 
 cd $INSTALL_DIR
 
-# Create virtual environment
+# Check if requirements.txt exists
+if [ ! -f "requirements.txt" ]; then
+    echo "Creating requirements.txt..."
+    cat > requirements.txt << 'EOFREQ'
+# MPV Pi Player - Python Dependencies
+
+# Web Framework
+Flask==2.3.3
+flask-cors==4.0.0
+Werkzeug==2.3.7
+
+# WebSocket Support for Sync
+websockets==11.0.3
+
+# System utilities
+psutil==5.9.5
+EOFREQ
+fi
+
+# Create or recreate virtual environment
+if [ -d "venv" ]; then
+    echo "Removing old virtual environment..."
+    rm -rf venv
+fi
+
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
@@ -369,4 +400,5 @@ else
     echo ""
     echo "Manual reboot recommended: sudo reboot"
 fi
+
 
