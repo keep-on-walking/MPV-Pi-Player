@@ -1,0 +1,12 @@
+{
+  "media_dir": "/home/pi/videos",
+  "max_upload_size": 2147483648,
+  "volume": 100,
+  "sync_mode": "standalone",
+  "master_ip": "",
+  "sync_port": 8765,
+  "autoplay": false,
+  "loop": false,
+  "hardware_accel": true,
+  "display_output": "HDMI-A-1"
+}
