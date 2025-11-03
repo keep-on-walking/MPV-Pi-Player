@@ -38,10 +38,8 @@ CORS(app)
 
 # Configuration
 HOME_DIR = os.path.expanduser('~')
-INSTALL_DIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG_FILE = os.path.join(INSTALL_DIR, 'config.json')
+CONFIG_FILE = os.path.join(HOME_DIR, 'mpv-player-config.json')
 DEFAULT_CONFIG = {
-    "port": 8080,
     "media_dir": os.path.join(HOME_DIR, "videos"),
     "max_upload_size": 2147483648,  # 2GB in bytes
     "volume": 100,
@@ -333,19 +331,14 @@ def initialize():
     
     # Initialize sync manager if needed
     if config.get('sync_mode') == 'master':
-        sync_manager = SyncManager(mode='master', config=config, player=player)
+        sync_manager = SyncManager(mode='master', config=config)
         sync_manager.start()
-        logger.info("Sync manager started in MASTER mode")
     elif config.get('sync_mode') == 'slave':
         sync_manager = SyncManager(mode='slave', config=config, player=player)
         sync_manager.start()
-        logger.info(f"Sync manager started in SLAVE mode, connecting to {config.get('master_ip')}")
-    else:
-        logger.info("Running in standalone mode (no sync)")
     
     logger.info("MPV Pi Player initialized successfully")
 
 if __name__ == '__main__':
     initialize()
-    port = config.get('port', 8080)
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False)
