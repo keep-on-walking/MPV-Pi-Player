@@ -72,6 +72,28 @@ After installation and reboot:
 4. Click "CONNECT TO MASTER"
 
 Slave players will automatically sync with the master's playback.
+========================================================================
+SYNC PLAYBACK TROUBLESHOOTING:
+
+Use the sync-setup.sh file to setup sync playback:
+
+# Navigate to your installation directory
+cd ~/mpv-pi-player
+
+# Create the file with nano
+nano sync-setup.sh
+
+# Now paste the entire script content (right-click or Shift+Insert)
+# Then save with: Ctrl+X, then Y, then Enter
+
+# Make it executable
+chmod +x sync-setup.sh
+
+# Run it
+./sync-setup.sh
+
+======================================================================
+
 
 ## File Structure
 
