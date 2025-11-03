@@ -342,8 +342,19 @@ sudo systemctl enable mpv-player.service
 echo ""
 echo "Step 8: Creating default configuration..."
 
-cat > $HOME_DIR/mpv-player-config.json << EOF
+# Update config.json with actual user paths
+if [ -f "$INSTALL_DIR/config.json" ]; then
+    # Replace placeholder with actual path
+    sed -i "s|MEDIA_DIR_PLACEHOLDER|$HOME_DIR/videos|g" $INSTALL_DIR/config.json
+    # Add port if missing
+    if ! grep -q '"port"' $INSTALL_DIR/config.json; then
+        sed -i 's/"media_dir"/"port": 8080,\n  "media_dir"/' $INSTALL_DIR/config.json
+    fi
+else
+    # Create config.json if it doesn't exist
+    cat > $INSTALL_DIR/config.json << EOF
 {
+    "port": 8080,
     "media_dir": "$HOME_DIR/videos",
     "max_upload_size": 2147483648,
     "volume": 100,
@@ -356,6 +367,7 @@ cat > $HOME_DIR/mpv-player-config.json << EOF
     "display_output": "HDMI-A-1"
 }
 EOF
+fi
 
 echo ""
 echo "Step 9: Setting permissions..."
@@ -380,8 +392,8 @@ if sudo systemctl is-active --quiet mpv-player.service; then
     echo "========================================="
     echo ""
     IP=$(hostname -I | awk '{print $1}')
-    echo "✓ Web Interface: http://$IP:5000"
-    echo "✓ Node-RED API: http://$IP:5000/api"
+    echo "✓ Web Interface: http://$IP:8080"
+    echo "✓ Node-RED API: http://$IP:8080/api"
     echo "✓ Video Folder: $HOME_DIR/videos"
     echo ""
     echo "Service status: $(sudo systemctl is-active mpv-player.service)"
