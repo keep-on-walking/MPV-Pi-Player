@@ -53,19 +53,32 @@ class MPVController:
             # Build MPV command with hardware acceleration for Pi 4
             cmd = ['mpv']
             
+            # Check if display is connected
+            display_connected = self._check_display_connected()
+            
             # Hardware acceleration settings for Raspberry Pi 4
-            if self.config.get('hardware_accel', True):
-                cmd.extend([
-                    '--hwdec=auto-copy',      # Auto hardware decoding
-                    '--vo=drm',               # Direct rendering for console
-                    '--drm-mode=1920x1080',   # Force 1080p output
-                    '--drm-connector=HDMI-A-1', # Use HDMI-1
-                ])
+            if display_connected:
+                # Use hardware rendering when display is connected
+                if self.config.get('hardware_accel', True):
+                    cmd.extend([
+                        '--hwdec=auto-copy',      # Auto hardware decoding
+                        '--vo=drm',               # Direct rendering for console
+                        '--drm-mode=1920x1080',   # Force 1080p output
+                        '--drm-connector=HDMI-A-1', # Use HDMI-1
+                    ])
+                else:
+                    cmd.extend([
+                        '--vo=drm',  # Direct rendering without GPU
+                        '--drm-mode=1920x1080',
+                        '--drm-connector=HDMI-A-1',
+                    ])
             else:
+                # Use null output when no display (headless mode)
+                logger.info("No display detected - running in headless mode")
                 cmd.extend([
-                    '--vo=drm',  # Direct rendering without GPU
-                    '--drm-mode=1920x1080',
-                    '--drm-connector=HDMI-A-1',
+                    '--vo=null',              # Null video output (no display needed)
+                    '--ao=null',               # Null audio output (optional, remove if you want audio)
+                    '--no-video',              # Don't process video (faster in headless)
                 ])
             
             # Display settings
@@ -116,6 +129,30 @@ class MPVController:
         except Exception as e:
             logger.error(f"Error starting MPV: {e}")
             return False
+    
+    def _check_display_connected(self):
+        """Check if HDMI display is connected"""
+        try:
+            # Check for HDMI connection on Raspberry Pi
+            import subprocess
+            result = subprocess.run(['tvservice', '-s'], capture_output=True, text=True, timeout=2)
+            if result.returncode == 0 and 'HDMI' in result.stdout:
+                return True
+            
+            # Alternative check using /sys/class/drm
+            import glob
+            for card_path in glob.glob('/sys/class/drm/card*-HDMI-*/status'):
+                try:
+                    with open(card_path, 'r') as f:
+                        if 'connected' in f.read():
+                            return True
+                except:
+                    continue
+            
+            return False
+        except:
+            # If we can't detect, assume display is connected
+            return True
     
     def pause(self):
         """Toggle pause/resume"""
