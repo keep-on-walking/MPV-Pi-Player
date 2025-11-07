@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-MPV Controller Module
+MPV Controller Module with Headless Fix
 Handles video playback using MPV with hardware acceleration for Raspberry Pi
+Works with or without HDMI display connected
 """
 
 import os
@@ -59,6 +60,7 @@ class MPVController:
             # Hardware acceleration settings for Raspberry Pi 4
             if display_connected:
                 # Use hardware rendering when display is connected
+                logger.info("Display detected - using hardware rendering")
                 if self.config.get('hardware_accel', True):
                     cmd.extend([
                         '--hwdec=auto-copy',      # Auto hardware decoding
@@ -77,8 +79,8 @@ class MPVController:
                 logger.info("No display detected - running in headless mode")
                 cmd.extend([
                     '--vo=null',              # Null video output (no display needed)
-                    '--ao=null',               # Null audio output (optional, remove if you want audio)
-                    '--no-video',              # Don't process video (faster in headless)
+                    '--ao=null',              # Null audio output (remove if you want audio)
+                    '--no-video',             # Don't process video (faster in headless)
                 ])
             
             # Display settings
@@ -95,14 +97,20 @@ class MPVController:
                 '--really-quiet',
             ])
             
-            # Audio/Video settings
-            cmd.extend([
-                f'--volume={self.volume}',
-                '--video-sync=display-resample',
-                '--audio-channels=stereo',  # Force stereo output
-                '--audio-device=alsa/hdmi:CARD=vc4hdmi0,DEV=0',  # Raspberry Pi 4 HDMI audio output
-                '--audio-samplerate=48000',  # Standard HDMI sample rate
-            ])
+            # Audio/Video settings (only if display is connected)
+            if display_connected:
+                cmd.extend([
+                    f'--volume={self.volume}',
+                    '--video-sync=display-resample',
+                    '--audio-channels=stereo',  # Force stereo output
+                    '--audio-device=alsa/hdmi:CARD=vc4hdmi0,DEV=0',  # Raspberry Pi 4 HDMI audio output
+                    '--audio-samplerate=48000',  # Standard HDMI sample rate
+                ])
+            else:
+                # In headless mode, still set volume for consistency
+                cmd.extend([
+                    f'--volume={self.volume}',
+                ])
             
             # IPC socket for control
             cmd.extend([
@@ -111,6 +119,9 @@ class MPVController:
             
             # Add the file to play
             cmd.append(filepath)
+            
+            # Log the command for debugging
+            logger.info(f"MPV Command: {' '.join(cmd)}")
             
             # Start MPV process
             self.process = subprocess.Popen(
@@ -133,26 +144,43 @@ class MPVController:
     def _check_display_connected(self):
         """Check if HDMI display is connected"""
         try:
-            # Check for HDMI connection on Raspberry Pi
-            import subprocess
+            # Check for HDMI connection on Raspberry Pi using tvservice
             result = subprocess.run(['tvservice', '-s'], capture_output=True, text=True, timeout=2)
-            if result.returncode == 0 and 'HDMI' in result.stdout:
-                return True
+            logger.debug(f"tvservice output: {result.stdout}")
+            
+            # Check if HDMI is connected and powered on
+            if result.returncode == 0:
+                stdout = result.stdout.lower()
+                # Look for signs that display is connected
+                if 'hdmi' in stdout and 'dvi' not in stdout:
+                    if 'off' not in stdout and 'unknown' not in stdout:
+                        logger.debug("Display detected via tvservice")
+                        return True
             
             # Alternative check using /sys/class/drm
             import glob
             for card_path in glob.glob('/sys/class/drm/card*-HDMI-*/status'):
                 try:
                     with open(card_path, 'r') as f:
-                        if 'connected' in f.read():
+                        status = f.read().strip()
+                        if 'connected' == status:  # Exact match for 'connected'
+                            logger.debug(f"Display detected via {card_path}")
                             return True
-                except:
+                except Exception as e:
+                    logger.debug(f"Could not read {card_path}: {e}")
                     continue
             
+            logger.debug("No display detected")
             return False
-        except:
-            # If we can't detect, assume display is connected
-            return True
+            
+        except FileNotFoundError:
+            # tvservice not found (might not be on a Pi)
+            logger.debug("tvservice not found, assuming no display")
+            return False
+        except Exception as e:
+            # If we can't detect, assume no display for safety
+            logger.debug(f"Display detection error: {e}, assuming no display")
+            return False
     
     def pause(self):
         """Toggle pause/resume"""
@@ -360,3 +388,4 @@ class MPVController:
                 logger.debug(f"Monitor error: {e}")
             
             time.sleep(0.5)
+
