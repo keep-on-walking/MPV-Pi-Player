@@ -360,4 +360,3 @@ class MPVController:
                 logger.debug(f"Monitor error: {e}")
             
             time.sleep(0.5)
-
