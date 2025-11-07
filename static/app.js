@@ -1,4 +1,4 @@
-// MPV Pi Player - Frontend JavaScript
+// MPV Pi Player - Frontend JavaScript (No Sync Version)
 
 let currentStatus = {};
 let statusInterval = null;
@@ -47,11 +47,6 @@ function initializeEventListeners() {
         uploadArea.classList.remove('dragover');
     });
     uploadArea.addEventListener('drop', handleFileDrop);
-    
-    // Sync controls
-    document.getElementById('btn-sync-standalone').addEventListener('click', () => setSyncMode('standalone'));
-    document.getElementById('btn-sync-master').addEventListener('click', () => setSyncMode('master'));
-    document.getElementById('btn-sync-slave').addEventListener('click', connectToMaster);
 }
 
 // Start polling for status updates
@@ -69,10 +64,6 @@ async function updateStatus() {
         
         // Update UI elements
         document.getElementById('hostname').textContent = status.hostname || 'Unknown';
-        
-        // Update sync mode badge
-        const syncBadge = document.getElementById('sync-mode');
-        syncBadge.textContent = status.sync_mode.charAt(0).toUpperCase() + status.sync_mode.slice(1);
         
         // Update current file
         if (status.current_file) {
@@ -102,19 +93,6 @@ async function updateStatus() {
         // Update volume slider
         document.getElementById('volume').value = status.volume;
         document.getElementById('volume-value').textContent = status.volume + '%';
-        
-        // Update sync mode indicators
-        document.querySelectorAll('.sync-mode').forEach(el => el.classList.remove('active'));
-        if (status.sync_mode === 'master') {
-            document.getElementById('sync-master').classList.add('active');
-            updateSyncStatus('Running as sync master');
-        } else if (status.sync_mode === 'slave') {
-            document.getElementById('sync-slave').classList.add('active');
-            updateSyncStatus('Connected as slave');
-        } else {
-            document.getElementById('sync-standalone').classList.add('active');
-            updateSyncStatus('Running in standalone mode');
-        }
         
     } catch (error) {
         console.error('Failed to update status:', error);
@@ -371,58 +349,6 @@ async function uploadFile(file) {
     }
 }
 
-// Sync mode functions
-async function setSyncMode(mode) {
-    if (mode === 'standalone') {
-        try {
-            const response = await fetch('/api/sync/standalone', {
-                method: 'POST'
-            });
-            const result = await response.json();
-            if (result.success) {
-                showNotification('Set to standalone mode', 'success');
-            }
-        } catch (error) {
-            showNotification('Failed to set mode', 'error');
-        }
-        
-    } else if (mode === 'master') {
-        try {
-            const response = await fetch('/api/sync/master', {
-                method: 'POST'
-            });
-            const result = await response.json();
-            if (result.success) {
-                showNotification('Set as sync master', 'success');
-            }
-        } catch (error) {
-            showNotification('Failed to set as master', 'error');
-        }
-    }
-}
-
-async function connectToMaster() {
-    const masterIp = document.getElementById('master-ip').value;
-    if (!masterIp) {
-        showNotification('Please enter master IP', 'error');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/sync/slave', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ master_ip: masterIp })
-        });
-        const result = await response.json();
-        if (result.success) {
-            showNotification(`Connected to master at ${masterIp}`, 'success');
-        }
-    } catch (error) {
-        showNotification('Failed to connect to master', 'error');
-    }
-}
-
 // Helper functions
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
@@ -437,16 +363,9 @@ function formatFileSize(bytes) {
     return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
 }
 
-function updateSyncStatus(message) {
-    const statusEl = document.getElementById('sync-status');
-    if (statusEl) {
-        statusEl.innerHTML = `<strong>Status:</strong> ${message}`;
-    }
-}
-
 function updateApiEndpoint() {
     const hostname = window.location.hostname;
-    const port = window.location.port || '5000';
+    const port = window.location.port || '8080';
     document.getElementById('api-endpoint').textContent = `http://${hostname}:${port}/api`;
 }
 
@@ -455,6 +374,18 @@ function showNotification(message, type) {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#4caf50' : '#f44336'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        z-index: 1000;
+        transition: opacity 0.3s;
+    `;
     document.body.appendChild(toast);
     
     // Remove after 3 seconds
@@ -465,3 +396,8 @@ function showNotification(message, type) {
         }, 300);
     }, 3000);
 }
+
+// Make functions globally available for inline onclick handlers
+window.playFile = playFile;
+window.deleteFile = deleteFile;
+
