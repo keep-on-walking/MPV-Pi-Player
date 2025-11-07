@@ -1,196 +1,183 @@
-# MPV Pi Player
+# MPV Pi Player - Standalone Version
 
-A complete media player system for Raspberry Pi with web interface, Node-RED API, and multi-player synchronization support.
+A powerful video player system for Raspberry Pi with web interface and API control.
 
 ## Features
 
-- 🎬 **MPV-based video playback** optimized for Raspberry Pi 4
-- 🌐 **Web interface** with dark theme for easy control
-- 🔌 **Node-RED API** for automation and integration
-- 🔄 **Multi-player sync** - Control multiple players from a master device
-- 📁 **File management** - Upload, play, and delete videos
-- 🎮 **Full playback control** - Play, pause, stop, skip, seek
-- 🔊 **Volume control** with HDMI audio output
-- 🖥️ **Clean black screen** when idle (no console text)
+- 🎬 **Hardware-accelerated video playback** using MPV
+- 🌐 **Web Interface** for easy control from any device
+- 📱 **Responsive Design** - works on phones, tablets, and desktops
+- 🔌 **HTTP API** for Node-RED and automation integration
+- 📁 **File Management** - upload, delete, and organize videos
+- 🎮 **Full Playback Control** - play, pause, stop, seek, skip, volume
+- 🖥️ **Headless Mode** - works with or without HDMI display connected
+- 🔊 **HDMI Audio** - optimized for Raspberry Pi 4 audio output
+- 📂 **Dynamic Path Detection** - works with any username or storage type
 
-## One-Line Installation
+## Requirements
 
-SSH into your Raspberry Pi running Raspberry Pi OS Lite and run:
+- Raspberry Pi (tested on Pi 3, Pi 4)
+- Raspberry Pi OS Lite (recommended) or Desktop
+- Python 3.7+
+- Internet connection for installation
+
+## Quick Installation
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/keep-on-walking/mpv-pi-player/main/install.sh | bash
+# One-line installer
+curl -sSL https://raw.githubusercontent.com/yourusername/MPV-Pi-Player/main/install.sh | bash
 ```
 
-This installer will:
-- Install all dependencies (MPV, Python, etc.)
-- Configure display for black screen when idle  
-- Set HDMI 0 as audio output
-- Set up the web interface
-- Configure the service to start on boot
-- Create video storage directory
-- Reboot the system automatically
+## Manual Installation
 
-## Access the Player
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/MPV-Pi-Player.git
+cd MPV-Pi-Player
 
-After installation and reboot:
+# Run the installer
+chmod +x install.sh
+./install.sh
+```
 
-1. **Web Interface**: `http://[YOUR_PI_IP]:5000`
-2. **Upload videos** through the web interface
-3. **Control playback** using the web controls or Node-RED
+## Usage
 
-## Node-RED Integration
-
-### Quick Setup
-1. Import `examples/node-red-flows.json` into Node-RED
-2. Replace `{{PI_IP}}` with your Raspberry Pi's IP address
-3. Deploy the flow
+### Web Interface
+After installation, access the player at:
+```
+http://[your-pi-ip]:8080
+```
 
 ### API Endpoints
 
-| Method | Endpoint | Description | Payload |
-|--------|----------|-------------|---------|
-| POST | `/api/play` | Play video | `{"file": "video.mp4"}` |
-| POST | `/api/pause` | Toggle pause | - |
-| POST | `/api/stop` | Stop playback | - |
-| POST | `/api/skip` | Skip forward/backward | `{"seconds": 30}` |
-| POST | `/api/seek` | Seek to position | `{"position": 300}` |
-| POST | `/api/volume` | Set volume | `{"level": 50}` |
-| GET | `/api/status` | Get player status | - |
-| GET | `/api/files` | List media files | - |
+Control the player via HTTP API:
 
-## Multi-Player Synchronization
+- `GET /api/status` - Get player status
+- `POST /api/play` - Play a video or resume
+- `POST /api/pause` - Pause/resume playback  
+- `POST /api/stop` - Stop playback
+- `POST /api/seek` - Seek to position
+- `POST /api/skip` - Skip forward/backward
+- `POST /api/volume` - Set volume
+- `GET /api/files` - List media files
+- `POST /api/upload` - Upload new video
+- `DELETE /api/files/{filename}` - Delete a video
 
-### Master Setup
-1. Open web interface
-2. Go to "Multi-Player Sync" section
-3. Click "SET AS MASTER"
+### Node-RED Integration
 
-### Slave Setup
-1. Open web interface on slave Pi
-2. Go to "Multi-Player Sync" section  
-3. Enter master's IP address
-4. Click "CONNECT TO MASTER"
-
-Slave players will automatically sync with the master's playback.
-========================================================================
-SYNC PLAYBACK TROUBLESHOOTING:
-
-Use the sync-setup.sh file to setup sync playback:
-
-# Navigate to your installation directory
-cd ~/mpv-pi-player
-
-# Create the file with nano
-nano sync-setup.sh
-
-# Now paste the entire script content (right-click or Shift+Insert)
-# Then save with: Ctrl+X, then Y, then Enter
-
-# Make it executable
-chmod +x sync-setup.sh
-
-# Run it
-./sync-setup.sh
-
-======================================================================
-
+Example flow to play a video:
+```json
+{
+  "method": "POST",
+  "url": "http://[pi-ip]:8080/api/play",
+  "headers": {"Content-Type": "application/json"},
+  "payload": {"file": "video.mp4"}
+}
+```
 
 ## File Structure
 
 ```
-/home/pi/
-├── mpv-pi-player/        # Application directory
-│   ├── app.py            # Main Flask application
-│   ├── mpv_controller.py # MPV control module
-│   ├── sync_manager.py   # Sync functionality
-│   ├── static/           # CSS and JavaScript
-│   ├── templates/        # HTML templates
-│   └── venv/             # Python virtual environment
-└── videos/               # Video storage directory
+~/mpv-pi-player/
+├── app.py              # Main application
+├── mpv_controller.py   # MPV control module
+├── config.json         # Configuration file
+├── requirements.txt    # Python dependencies
+├── static/            # Web interface assets
+├── templates/         # HTML templates
+└── media/            # Video files directory
 ```
 
 ## Configuration
 
-Edit `/home/pi/mpv-player-config.json` to customize:
-
+Edit `config.json` to customize:
 ```json
 {
+  "port": 8080,
   "media_dir": "/home/pi/videos",
-  "max_upload_size": 2147483648,
   "volume": 100,
-  "sync_mode": "standalone",
-  "hardware_accel": true
+  "hardware_accel": true,
+  "loop": false
 }
 ```
 
-## Service Management
+## Troubleshooting
+
+### Diagnostic Tools
+
+```bash
+# Run diagnostic script
+cd ~/mpv-pi-player
+./diagnose.sh
+```
+
+### Audio Issues
+
+If no audio through HDMI:
+```bash
+cd ~/mpv-pi-player
+./fix-audio.sh
+```
+
+### Service Management
 
 ```bash
 # Check service status
 sudo systemctl status mpv-player.service
 
 # View logs
-sudo journalctl -u mpv-player.service -f
+journalctl -u mpv-player.service -f
 
 # Restart service
 sudo systemctl restart mpv-player.service
-
-# Stop service
-sudo systemctl stop mpv-player.service
 ```
 
-## Troubleshooting
+### Common Issues
 
-### No Video Output
-- Ensure HDMI cable is connected before boot
-- Check that video file exists in `/home/pi/videos/`
-- View logs: `sudo journalctl -u mpv-player.service -n 50`
+1. **No video playback**
+   - Check if videos are in `~/videos` directory
+   - Verify file permissions: `chmod 644 ~/videos/*.mp4`
 
-### No Audio
-- Verify TV/monitor has speakers
-- Check TV audio isn't muted
-- Test audio: `speaker-test -D hw:0,0 -c 2 -l 1`
+2. **No audio**
+   - Run `./fix-audio.sh`
+   - Check TV/monitor volume
+   - Ensure HDMI cable supports audio
 
-- ## Troubleshooting
+3. **Web interface not accessible**
+   - Check firewall: `sudo ufw allow 8080`
+   - Verify service is running: `systemctl status mpv-player`
 
-### Audio Issues
-If you don't hear audio through HDMI:
-```bash
-cd ~/MPV-Pi-Player/
-chmod +x fix-audio.sh
-./fix-audio.sh
+4. **Videos won't upload**
+   - Check disk space: `df -h`
+   - Verify write permissions on media directory
 
+## Supported Formats
 
-### Web Interface Not Loading
-- Check Pi's IP address: `hostname -I`
-- Ensure service is running: `sudo systemctl status mpv-player.service`
-- Check firewall isn't blocking port 5000
-
-### Upload Fails
-- Check file size (max 2GB by default)
-- Ensure enough disk space: `df -h`
-- Check permissions: `ls -la /home/pi/videos/`
+- MP4, AVI, MKV, MOV
+- WMV, FLV, WEBM, M4V
+- MPG, MPEG, 3GP, OGV
 
 ## System Requirements
 
-- Raspberry Pi 4 (recommended) or Pi 3B+
-- Raspberry Pi OS Lite (64-bit recommended)
-- 8GB+ SD card
-- HDMI display
-- Network connection
-
-## What Gets Installed
-
-- MPV media player with hardware acceleration
-- Python 3 with Flask web framework
-- WebSocket support for synchronization
-- ALSA audio utilities
-- Graphics libraries for DRM output
+- **Minimum:** Raspberry Pi 3, 1GB RAM
+- **Recommended:** Raspberry Pi 4, 2GB+ RAM
+- **Storage:** Depends on video library size
+- **Network:** Ethernet or WiFi for web access
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT License - see LICENSE file for details
 
 ## Support
 
-For issues or questions, please open an issue on GitHub.
+For issues or questions:
+- Create an issue on GitHub
+- Check existing issues for solutions
+
+## Credits
+
+Built with:
+- [MPV](https://mpv.io/) - Video player
+- [Flask](https://flask.palletsprojects.com/) - Web framework
+- [Bootstrap](https://getbootstrap.com/) - UI framework
+
