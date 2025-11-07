@@ -1,4 +1,4 @@
-/* MPV Pi Player - Dark Theme Styles */
+/* MPV Pi Player - Dark Theme Styles (No Sync Version) */
 
 * {
     margin: 0;
@@ -290,35 +290,46 @@ h1 {
     display: none;
 }
 
-/* Sync Controls */
-.sync-controls {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
+/* ===== HIDE SYNC ELEMENTS ===== */
+
+/* Hide sync mode badge in header */
+#sync-mode,
+.sync-badge {
+    display: none !important;
 }
 
-.sync-mode {
-    background: #2d2d2d;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* Hide the entire Multi-Player Sync card */
+.card:has(h2:contains("Multi-Player Sync")),
+.card:has(.card-title:contains("Multi-Player Sync")) {
+    display: none !important;
 }
 
-.sync-mode.active {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.1);
-}
-
+/* Additional selector if the above doesn't work */
+.sync-controls,
+.sync-mode,
+#sync-standalone,
+#sync-master,
+#sync-slave,
+#sync-status,
+#btn-sync-standalone,
+#btn-sync-master,
+#btn-sync-slave,
+#master-ip,
 .master-ip-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    background: #2d2d2d;
-    color: #ffffff;
-    margin-top: 10px;
+    display: none !important;
 }
+
+/* Hide any card that contains sync controls */
+.card:has(.sync-controls) {
+    display: none !important;
+}
+
+/* Clean up the subtitle to remove the pipe separator when sync badge is hidden */
+.subtitle::after {
+    content: "";
+}
+
+/* ===== END HIDE SYNC ELEMENTS ===== */
 
 /* Responsive Design */
 @media (max-width: 768px) {
