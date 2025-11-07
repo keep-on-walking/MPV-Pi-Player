@@ -12,8 +12,7 @@
         <header>
             <h1>MPV Pi Player</h1>
             <div class="subtitle">
-                <span id="hostname">Loading...</span> | 
-                <span id="sync-mode" class="sync-badge">Standalone</span>
+                <span id="hostname">Loading...</span>
             </div>
         </header>
 
@@ -99,35 +98,6 @@
                     </div>
                 </div>
 
-                <!-- Sync Settings Card -->
-                <div class="card">
-                    <h2 class="card-title">Multi-Player Sync</h2>
-                    <div class="sync-controls">
-                        <div class="sync-mode" id="sync-standalone">
-                            <h3>Standalone</h3>
-                            <p>Independent playback</p>
-                            <button id="btn-sync-standalone" class="btn btn-primary">SET STANDALONE</button>
-                        </div>
-                        
-                        <div class="sync-mode" id="sync-master">
-                            <h3>Master</h3>
-                            <p>Control other players</p>
-                            <button id="btn-sync-master" class="btn btn-primary">SET AS MASTER</button>
-                        </div>
-                        
-                        <div class="sync-mode" id="sync-slave">
-                            <h3>Slave</h3>
-                            <p>Follow master player</p>
-                            <input type="text" id="master-ip" class="master-ip-input" placeholder="Master IP (e.g., 192.168.0.100)">
-                            <button id="btn-sync-slave" class="btn btn-primary" style="margin-top: 10px;">CONNECT TO MASTER</button>
-                        </div>
-                    </div>
-                    
-                    <div id="sync-status" style="margin-top: 20px; padding: 15px; background: #2d2d2d; border-radius: 8px;">
-                        <!-- Sync status will be displayed here -->
-                    </div>
-                </div>
-
                 <!-- API Info Card -->
                 <div class="card">
                     <h2 class="card-title">Node-RED Integration</h2>
@@ -153,6 +123,6 @@
         </div>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app-nosync.js"></script>
 </body>
 </html>
