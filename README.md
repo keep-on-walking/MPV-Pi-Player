@@ -25,14 +25,14 @@ A powerful video player system for Raspberry Pi with web interface and API contr
 
 ```bash
 # One-line installer
-curl -sSL https://raw.githubusercontent.com/yourusername/MPV-Pi-Player/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/keep-on-walking/MPV-Pi-Player/main/install.sh | bash
 ```
 
 ## Manual Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/MPV-Pi-Player.git
+git clone https://github.com/keep-on-walking/MPV-Pi-Player.git
 cd MPV-Pi-Player
 
 # Run the installer
